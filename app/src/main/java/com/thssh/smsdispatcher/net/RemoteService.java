@@ -17,8 +17,10 @@ public class RemoteService implements Api {
         switch (getMode()) {
             case Mode.SERVER_CHAN:
                 api = getServerChanAPi();
+                break;
             case Mode.SERVER_SELF:
                 api = getServerSelfAPi();
+                break;
             case Mode.SERVER_MULTI:
                 api = getServerMultiAPi();
             default: break;
