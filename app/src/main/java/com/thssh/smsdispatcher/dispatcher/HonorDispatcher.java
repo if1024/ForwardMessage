@@ -1,6 +1,7 @@
 package com.thssh.smsdispatcher.dispatcher;
 
 import android.app.Notification;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
@@ -36,6 +37,7 @@ public class HonorDispatcher extends CommonDispatcher {
 //        String content = Util.o2c(sbn.getNotification().tickerText);
         String content = "";
         String subText = "";
+        String name = "";
         long when = sbn.getNotification().when;
         if (extras.get(Notification.EXTRA_TITLE) != null) {
             title = Util.o2c(extras.getCharSequence(Notification.EXTRA_TITLE));
@@ -47,8 +49,16 @@ public class HonorDispatcher extends CommonDispatcher {
             content = Util.o2c(extras.getCharSequence(Notification.EXTRA_TEXT));
         }
         content = beatify(content);
-        String combinedTitle = String.format(Locale.getDefault(), "%s|%s|%s", Util.getPhoneNumber(), packageName, title);
-//        Log.i(TAG, "dispatch: " + packageName + "[" + combinedTitle + "]" + content + "|" + subText + "|" + print(sbn.getNotification()));
+
+        try {
+            PackageManager pm = App.getAppContext().getPackageManager();
+            name = pm.getApplicationLabel(pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)).toString();
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        String combinedTitle = String.format(Locale.getDefault(), "%s|%s|%s|%s", Util.getPhoneNumber(), packageName,name, title);
+        Log.i(TAG, "dispatch: " + packageName + "[" + combinedTitle + "]" + content + "|" + subText + "|" + print(sbn.getNotification()));
         Set<String> includeSet = getSettings().getIncludeSet();
         Set<String> excludeSet = getSettings().getExcludeSet();
         if (includeSet != null && includeSet.size() < 1

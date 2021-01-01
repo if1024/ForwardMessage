@@ -1,6 +1,7 @@
 package com.thssh.smsdispatcher.dispatcher;
 
 import android.app.Notification;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
@@ -27,20 +28,33 @@ public class SamsungDispatcher extends CommonDispatcher {
         Bundle extras = sbn.getNotification().extras;
         long when = sbn.getNotification().when;
         String title = "";
-        String content = sbn.getNotification().tickerText.toString();
+        String name = "";
+        String content = "";
         String subText = "";
         if (extras.get(Notification.EXTRA_TITLE) != null) {
             title = extras.get(Notification.EXTRA_TITLE).toString();
         }
-//        if (extras.get(Notification.EXTRA_TEXT) != null) {
-//            content = extras.get(Notification.EXTRA_TEXT).toString();
-//        }
+
+        if (sbn.getNotification().tickerText != null) {
+            content = sbn.getNotification().tickerText.toString();
+        } else if (extras.get(Notification.EXTRA_TEXT) != null) {
+            content = extras.get(Notification.EXTRA_TEXT).toString();
+        }
+
         if (extras.get(Notification.EXTRA_SUB_TEXT) != null) {
             subText = extras.get(Notification.EXTRA_SUB_TEXT).toString();
         }
 //        ApplicationInfo appInfo = (ApplicationInfo) extras.get("android.rebuild.applicationInfo");
         String packageName = sbn.getPackageName();
-        String combinedTitle = String.format(Locale.getDefault(), "%s|%s|%s", Util.getPhoneNumber(), packageName, title);
+
+        try {
+            PackageManager pm = App.getAppContext().getPackageManager();
+            name = pm.getApplicationLabel(pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)).toString();
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        String combinedTitle = String.format(Locale.getDefault(), "%s|%s|%s|%s", Util.getPhoneNumber(), packageName, name, title);
         Log.i("MeizuDispatcher", "dispatch: " + packageName + "[" + combinedTitle + "]" + content + "==" + subText);
         Set<String> includeSet = getSettings().getIncludeSet();
         Set<String> excludeSet = getSettings().getExcludeSet();
